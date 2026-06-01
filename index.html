@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sheetmaxxing — Free Sheet Cut Optimizer for Plywood, Metal & Glass</title>
+  <meta name="description" content="Optimize sheet material cutting layouts for plywood, MDF, metal, glass, and acrylic. Minimize waste with automatic nesting, rotation, and kerf-aware bin packing. Free online cut list optimizer for CNC, panel saws, and laser cutters.">
+  <meta name="keywords" content="sheet cut optimizer, cut list optimizer, panel cutting software, nesting software, bin packing, plywood cut optimizer, CNC nesting, sheet material calculator, cutting layout, minimize waste, kerf calculator, panel saw optimizer, glass cutting optimizer, metal sheet nesting, free cut optimizer">
+  <meta name="author" content="Louis Racicot">
+  <link rel="canonical" href="https://sheetmaxxing.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Sheetmaxxing — Free Sheet Cut Optimizer">
+  <meta property="og:description" content="Minimize material waste with automatic nesting and kerf-aware bin packing. Free online optimizer for plywood, metal, glass, and acrylic sheet cutting.">
+  <meta property="og:url" content="https://sheetmaxxing.com/">
+  <meta property="og:site_name" content="Sheetmaxxing">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Sheetmaxxing — Free Sheet Cut Optimizer">
+  <meta name="twitter:description" content="Minimize material waste with automatic nesting and kerf-aware bin packing for plywood, metal, glass, and acrylic.">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Sheetmaxxing",
+    "url": "https://sheetmaxxing.com/",
+    "description": "Free online sheet cut optimizer. Minimize waste when cutting plywood, MDF, metal, glass, or acrylic sheets. Supports rotation, kerf width, and multiple sheets.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Louis Racicot",
+      "url": "https://louisracicot.com"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="vendor/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f6f2;
+      --surface: #ffffff;
+      --surface2: #f0efe9;
+      --border: #dddbd0;
+      --border2: #c8c6bc;
+      --text: #1a1917;
+      --text2: #6b6962;
+      --text3: #9b9890;
+      --accent: #1a1917;
+      --danger: #c04040;
+      --danger-bg: #fff0f0;
+      --preview-letterbox: #dddbd0;
+      --sheet-face: #f5f4f0;
+      --preview-grid: #dddbd0;
+      --preview-border: #888888;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --mono: 'JetBrains Mono', 'Fira Mono', 'Cascadia Code', 'Consolas', monospace;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #1a1917;
+      --surface: #242320;
+      --surface2: #2e2c29;
+      --border: #3a3835;
+      --border2: #4a4845;
+      --text: #f0efe9;
+      --text2: #9b9890;
+      --text3: #6b6962;
+      --accent: #f0efe9;
+      --danger: #f07070;
+      --danger-bg: #3a1010;
+      --preview-letterbox: #1a1917;
+    }
+
+    body {
+      font-family: var(--mono);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.25rem 1.5rem 2rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .header-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .header-link:hover {
+      color: var(--text);
+    }
+
+    .header-link i {
+      font-size: 18px;
+    }
+
+    .header-link.coffee:hover {
+      color: #ffdd00;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      cursor: pointer;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      user-select: none;
+    }
+
+    .theme-toggle input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .theme-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      background: var(--surface2);
+      border: 0.5px solid var(--border);
+      border-radius: 11px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .theme-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      transition: transform 0.2s;
+    }
+
+    .theme-toggle input:checked + .theme-switch {
+      background: var(--border2);
+    }
+
+    .theme-toggle input:checked + .theme-switch::after {
+      transform: translateX(18px);
+    }
+
+    .theme-toggle input:focus-visible + .theme-switch {
+      outline: 2px solid var(--border2);
+      outline-offset: 2px;
+    }
+
+    h1 span.tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text3);
+      font-weight: 400;
+      border: 0.5px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      vertical-align: middle;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .panel-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      margin-bottom: 1rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+    }
+
+    input[type=number],
+    input[type=text],
+    select {
+      font-family: var(--mono);
+      font-size: 13px;
+      background: var(--surface2);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 6px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type=number]:focus,
+    input[type=text]:focus,
+    select:focus {
+      border-color: var(--border2);
+    }
+
+    input[type=number] { width: 95px; }
+    select { width: 75px; }
+
+    .run-btn {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius);
+      padding: 7px 18px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .run-btn:hover { opacity: 0.8; }
+    .run-btn:active { opacity: 0.6; }
+
+    .cuts-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cuts-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .io-btn {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--surface2);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text2);
+      padding: 5px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s;
+    }
+
+    .io-btn:hover { background: var(--border); }
+
+    .io-btn i {
+      pointer-events: none;
+      font-size: 16px;
+    }
+
+    .io-btn.danger:hover {
+      color: var(--danger);
+      background: var(--danger-bg);
+      border-color: var(--danger);
+    }
+
+    #import-file { display: none; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text3);
+      font-weight: 400;
+      border-bottom: 0.5px solid var(--border);
+      padding: 5px 8px;
+      text-align: left;
+    }
+
+    td {
+      padding: 5px 8px;
+      border-bottom: 0.5px solid var(--border);
+      vertical-align: middle;
+    }
+
+    td input[type=number] { width: 80px; }
+    td input[type=text]   { width: 140px; }
+
+    .del-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text3);
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 16px;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .del-btn:hover { color: var(--danger); background: var(--danger-bg); }
+
+    .add-btn {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--surface2);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text2);
+      padding: 5px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s;
+    }
+
+    .add-btn:hover { background: var(--border); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .col-results {
+        order: 2;
+      }
+      .col-controls {
+        order: 1;
+      }
+    }
+
+    .col-results {
+      position: sticky;
+      top: 1.25rem;
+      min-width: 0;
+    }
+
+    .col-controls {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .col-controls .panel {
+      margin-bottom: 0;
+    }
+
+    .results-panel {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      min-height: 200px;
+    }
+
+    .results-panel-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      margin-bottom: 1rem;
+    }
+
+    .preview-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      text-align: center;
+      color: var(--text3);
+      border: 1px dashed var(--border2);
+      border-radius: var(--radius);
+      background: var(--surface2);
+      padding: 2rem 1.5rem;
+      min-height: min(70vh, 720px);
+      width: 100%;
+    }
+
+    .preview-placeholder[hidden] {
+      display: none;
+    }
+
+    .preview-placeholder i {
+      font-size: 2.5rem;
+      opacity: 0.45;
+    }
+
+    .preview-placeholder p {
+      font-size: 12px;
+      line-height: 1.5;
+      max-width: 22rem;
+    }
+
+    .results { min-width: 0; }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      min-width: 110px;
+    }
+
+    .stat.danger {
+      border-color: var(--danger);
+      background: var(--danger-bg);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text3);
+      margin-bottom: 2px;
+    }
+
+    .stat.danger .stat-label { color: var(--danger); }
+
+    .stat-val {
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+
+    .stat.danger .stat-val { color: var(--danger); }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .sheet-wrap {
+      margin-bottom: 1rem;
+    }
+
+    .sheet-wrap:last-child {
+      margin-bottom: 0;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .sheet-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text3);
+    }
+
+    .sheet-canvas-frame {
+      width: 100%;
+      min-height: min(70vh, 720px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--preview-letterbox);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .sheet-canvas-box {
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 0.5px solid var(--preview-border);
+      border-radius: var(--radius);
+      line-height: 0;
+    }
+
+    .sheet-canvas-box canvas {
+      display: block;
+      vertical-align: top;
+    }
+
+    .dl-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: var(--surface2);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text2);
+      padding: 4px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s;
+    }
+
+    .dl-btn:hover { background: var(--border); }
+
+    .warn-banner {
+      font-size: 12px;
+      color: var(--danger);
+      background: var(--danger-bg);
+      border: 0.5px solid var(--danger);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      margin-bottom: 1rem;
+    }
+
+    footer {
+      margin-top: 1.5rem;
+      font-size: 11px;
+      color: var(--text3);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    footer a {
+      color: var(--text2);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--text);
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        const raw = localStorage.getItem('opticutter-state');
+        const theme = raw ? JSON.parse(raw).theme : null;
+        const dark = theme === 'dark'
+          || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch (_) {
+        document.documentElement.dataset.theme =
+          window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+    })();
+  </script>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>
+    <i class="ti ti-cut" style="font-size:20px" aria-hidden="true"></i>
+    Sheetmaxxing
+    <span class="tag">Sheet Cut Optimizer</span>
+  </h1>
+  <div class="header-actions">
+    <a
+      class="header-link coffee"
+      href="https://buymeacoffee.com/lracicot"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Buy me a coffee"
+    >
+      <i class="ti ti-coffee" aria-hidden="true"></i>
+      <span>Buy me a coffee</span>
+    </a>
+    <a
+      class="header-link"
+      href="https://github.com/lracicot/sheetmaxxing"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="View source on GitHub"
+    >
+      <i class="ti ti-brand-github" aria-hidden="true"></i>
+      <span>GitHub</span>
+    </a>
+    <label class="theme-toggle" for="theme-toggle">
+      <span class="theme-toggle-text">Dark</span>
+      <input type="checkbox" id="theme-toggle" role="switch" aria-label="Dark mode">
+      <span class="theme-switch" aria-hidden="true"></span>
+    </label>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="col-results">
+    <div class="results-panel">
+      <div class="results-panel-title">Layout preview</div>
+      <div id="results-placeholder" class="preview-placeholder">
+        <i class="ti ti-layout-board" aria-hidden="true"></i>
+        <p>Run <strong>Optimize</strong> to preview how parts fit on each sheet.</p>
+      </div>
+      <div id="results" class="results"></div>
+    </div>
+  </div>
+
+  <div class="col-controls">
+<!-- Sheet config -->
+<div class="panel">
+  <div class="panel-title">Sheet &amp; settings</div>
+  <div class="toolbar">
+    <div class="field">
+      <label>Sheet width</label>
+      <input type="number" id="sw" value="1219" min="1" step="1">
+    </div>
+    <div class="field">
+      <label>Sheet height</label>
+      <input type="number" id="sh" value="3048" min="1" step="1">
+    </div>
+    <div class="field">
+      <label>Unit</label>
+      <select id="unit">
+        <option value="mm">mm</option>
+        <option value="in">in</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Kerf (blade width)</label>
+      <input type="number" id="kerf" value="3" min="0" step="0.5" style="width:80px">
+    </div>
+    <div class="field">
+      <label>Allow 90° rotation</label>
+      <select id="allowrot">
+        <option value="1">Yes</option>
+        <option value="0">No</option>
+      </select>
+    </div>
+    <button class="run-btn" onclick="runPackingNow()">
+      <i class="ti ti-arrows-sort" aria-hidden="true"></i> Optimize
+    </button>
+  </div>
+</div>
+
+<!-- Parts list -->
+<div class="panel">
+  <div class="cuts-header">
+    <div class="panel-title" style="margin-bottom:0">Parts list</div>
+    <div class="cuts-actions">
+      <button type="button" class="io-btn" onclick="exportParts()" title="Download parts as CSV">
+        <i class="ti ti-download" aria-hidden="true"></i> Export
+      </button>
+      <button type="button" class="io-btn" onclick="document.getElementById('import-file').click()" title="Load parts from CSV">
+        <i class="ti ti-upload" aria-hidden="true"></i> Import
+      </button>
+      <input type="file" id="import-file" accept=".csv,text/csv" onchange="importParts(this)">
+      <button type="button" class="io-btn danger" id="clear-all-parts-btn"
+        title="Remove every part from the list" aria-label="Clear all parts">
+        <i class="ti ti-trash" aria-hidden="true"></i> Clear all
+      </button>
+      <button type="button" class="add-btn" onclick="addRow()">
+        <i class="ti ti-plus" aria-hidden="true"></i> Add part
+      </button>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Width</th>
+        <th>Height</th>
+        <th>Name</th>
+        <th>Qty</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="cuts-body"></tbody>
+  </table>
+</div>
+  </div>
+</div>
+
+<footer>
+  <div>Maximal Rectangles · Best Short Side Fit · kerf-aware</div>
+  <div>Made by <a href="https://louisracicot.com" target="_blank" rel="noopener noreferrer">Louis Racicot</a></div>
+  <div><a href="https://buymeacoffee.com/lracicot" target="_blank" rel="noopener noreferrer"><i class="ti ti-coffee" aria-hidden="true"></i> Buy me a coffee</a></div>
+</footer>
+
+<script>
+const PALETTE = [
+  '#4a90d9','#e6873a','#5ba85a','#c45fa0','#8b6fbf',
+  '#5bb8b8','#d4a030','#d45858','#7ab8e8','#f0a060',
+  '#80c880','#d87ec0','#a89fd8','#7ed0d0','#e8c060','#e87878',
+];
+
+const STORAGE_KEY = 'opticutter-state';
+
+const SHEET_PREVIEW_COLORS = {
+  sheet: '#f5f4f0',
+  grid: '#dddbd0',
+  border: '#888888',
+};
+
+const DEFAULT_CUTS = [
+  { w: 780, h: 188, name: 'Cabinet Door',  qty: 1 },
+  { w: 780, h: 196, name: 'Side Panel',    qty: 1 },
+  { w: 826, h: 188, name: 'Shelf',         qty: 1 },
+  { w: 826, h: 196, name: 'Drawer Front',  qty: 1 },
+  { w: 878, h: 188, name: 'Drawer Front',  qty: 5 },
+  { w: 878, h: 196, name: 'Drawer Front',  qty: 5 },
+];
+
+let cuts = DEFAULT_CUTS.map((c) => ({ ...c }));
+let saveTimer = null;
+let packTimer = null;
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 250);
+}
+
+function schedulePacking() {
+  clearTimeout(packTimer);
+  packTimer = setTimeout(runPacking, 400);
+}
+
+function runPackingNow() {
+  clearTimeout(packTimer);
+  runPacking();
+}
+
+function scheduleUpdate() {
+  scheduleSave();
+  schedulePacking();
+}
+
+function getSystemTheme() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function getSheetDrawColors() {
+  return { ...SHEET_PREVIEW_COLORS };
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) toggle.checked = theme === 'dark';
+  schedulePacking();
+}
+
+function initTheme(saved) {
+  const theme = saved === 'light' || saved === 'dark' ? saved : getSystemTheme();
+  document.documentElement.dataset.theme = theme;
+  const toggle = document.getElementById('theme-toggle');
+  if (toggle) toggle.checked = theme === 'dark';
+}
+
+function bindThemeToggle() {
+  const toggle = document.getElementById('theme-toggle');
+  toggle.addEventListener('change', () => {
+    applyTheme(toggle.checked ? 'dark' : 'light');
+    scheduleSave();
+  });
+}
+
+function saveState() {
+  syncCutsFromTable();
+  const state = {
+    version: 1,
+    theme: document.documentElement.dataset.theme,
+    sheet: {
+      sw: +document.getElementById('sw').value,
+      sh: +document.getElementById('sh').value,
+      unit: document.getElementById('unit').value,
+      kerf: +document.getElementById('kerf').value,
+      allowRot: document.getElementById('allowrot').value,
+    },
+    parts: cuts.map((c) => ({ w: c.w, h: c.h, name: c.name, qty: c.qty })),
+  };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (_) { /* storage full or disabled */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    initTheme(state.theme);
+    if (state.sheet) {
+      const s = state.sheet;
+      if (Number.isFinite(s.sw) && s.sw > 0) document.getElementById('sw').value = s.sw;
+      if (Number.isFinite(s.sh) && s.sh > 0) document.getElementById('sh').value = s.sh;
+      if (s.unit === 'mm' || s.unit === 'in') document.getElementById('unit').value = s.unit;
+      if (Number.isFinite(s.kerf) && s.kerf >= 0) document.getElementById('kerf').value = s.kerf;
+      if (s.allowRot === '0' || s.allowRot === '1') document.getElementById('allowrot').value = s.allowRot;
+      else if (typeof s.allowRot === 'boolean')
+        document.getElementById('allowrot').value = s.allowRot ? '1' : '0';
+    }
+    if (Array.isArray(state.parts)) {
+      cuts = state.parts.map(normalizePart).filter(Boolean);
+    }
+  } catch (_) { /* ignore corrupt saved state */ }
+}
+
+function bindSettingsPersistence() {
+  for (const id of ['sw', 'sh', 'kerf', 'unit', 'allowrot']) {
+    const el = document.getElementById(id);
+    el.addEventListener('input', () => {
+      if (id === 'sw' || id === 'sh') syncPreviewAspect();
+      scheduleUpdate();
+    });
+    el.addEventListener('change', () => {
+      if (id === 'sw' || id === 'sh') syncPreviewAspect();
+      scheduleUpdate();
+    });
+  }
+}
+
+function escAttr(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+}
+
+/* ── Table rendering ── */
+function renderTable() {
+  const tbody = document.getElementById('cuts-body');
+  tbody.innerHTML = '';
+  cuts.forEach((c, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="number" value="${c.w}" min="1" step="0.5"
+            oninput="cuts[${i}].w=+this.value;scheduleUpdate()"></td>
+      <td><input type="number" value="${c.h}" min="1" step="0.5"
+            oninput="cuts[${i}].h=+this.value;scheduleUpdate()"></td>
+      <td><input type="text" value="${escAttr(c.name)}"
+            oninput="cuts[${i}].name=this.value;scheduleUpdate()"></td>
+      <td><input type="number" value="${c.qty}" min="1" step="1" style="width:60px"
+            oninput="cuts[${i}].qty=+this.value;scheduleUpdate()"></td>
+      <td><button class="del-btn" onclick="delRow(${i})" aria-label="Remove row">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function addRow() {
+  cuts.push({ w: 400, h: 300, name: 'Part', qty: 1 });
+  renderTable();
+  scheduleUpdate();
+}
+
+function delRow(i) {
+  cuts.splice(i, 1);
+  renderTable();
+  scheduleUpdate();
+}
+
+function clearAllParts() {
+  syncCutsFromTable();
+  const rowCount = document.querySelectorAll('#cuts-body tr').length;
+  if (rowCount === 0) return;
+  if (!confirm(`Remove all ${rowCount} part(s) from the list? This cannot be undone.`)) return;
+  clearTimeout(saveTimer);
+  saveTimer = null;
+  cuts = [];
+  renderTable();
+  runPackingNow();
+}
+
+function setResultsPlaceholder(visible) {
+  document.getElementById('results-placeholder').hidden = !visible;
+}
+
+function syncPreviewAspect() {
+  const sw = +document.getElementById('sw').value || 1219;
+  const sh = +document.getElementById('sh').value || 3048;
+  document.getElementById('results-placeholder').style.aspectRatio = `${sw} / ${sh}`;
+}
+
+function syncCutsFromTable() {
+  const rows = document.querySelectorAll('#cuts-body tr');
+  rows.forEach((tr, i) => {
+    const [wIn, hIn, nameIn, qtyIn] = tr.querySelectorAll('input');
+    if (!cuts[i]) return;
+    cuts[i].w = +wIn.value;
+    cuts[i].h = +hIn.value;
+    cuts[i].name = nameIn.value;
+    cuts[i].qty = Math.max(1, Math.floor(+qtyIn.value) || 1);
+  });
+  cuts.length = rows.length;
+}
+
+function normalizePart(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const w = +(raw.w ?? raw.width);
+  const h = +(raw.h ?? raw.height);
+  const name = String(raw.name ?? raw.label ?? '').trim() || 'Part';
+  const qty = Math.max(1, Math.floor(+(raw.qty ?? raw.quantity) || 1));
+  if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return null;
+  return { w, h, name, qty };
+}
+
+function parseCSVLine(line) {
+  const out = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++; }
+        else inQuotes = false;
+      } else cur += ch;
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ',') {
+      out.push(cur.trim());
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function parsePartsCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter((l) => l.trim());
+  if (lines.length === 0) return [];
+
+  const header = parseCSVLine(lines[0]).map((c) => c.toLowerCase().replace(/^\uFEFF/, ''));
+  const idx = (names) => header.findIndex((h) => names.includes(h));
+
+  let wI = idx(['width', 'w']);
+  let hI = idx(['height', 'h']);
+  let nameI = idx(['name', 'label', 'part']);
+  let qtyI = idx(['qty', 'quantity', 'count']);
+
+  let dataLines;
+  if (wI >= 0 || hI >= 0) {
+    dataLines = lines.slice(1);
+  } else {
+    wI = 0; hI = 1; nameI = 2; qtyI = 3;
+    dataLines = lines;
+  }
+
+  const parts = [];
+  for (const line of dataLines) {
+    const cols = parseCSVLine(line);
+    if (cols.every((c) => !c)) continue;
+    const part = normalizePart({
+      w: cols[wI],
+      h: cols[hI],
+      name: nameI >= 0 ? cols[nameI] : 'Part',
+      qty: qtyI >= 0 ? cols[qtyI] : 1,
+    });
+    if (part) parts.push(part);
+  }
+  return parts;
+}
+
+function downloadBlob(filename, mime, content) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function csvEscape(value) {
+  const s = String(value);
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function exportParts() {
+  syncCutsFromTable();
+  if (cuts.length === 0) {
+    alert('No parts to export.');
+    return;
+  }
+  const stamp = new Date().toISOString().slice(0, 10);
+  const lines = ['width,height,name,qty'];
+  for (const c of cuts) {
+    lines.push([c.w, c.h, csvEscape(c.name), c.qty].join(','));
+  }
+  downloadBlob(`opticutter-parts-${stamp}.csv`, 'text/csv;charset=utf-8', lines.join('\n'));
+}
+
+function importParts(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = parsePartsCSV(reader.result).map(normalizePart).filter(Boolean);
+      if (imported.length === 0) {
+        alert('No valid parts found in file.');
+        return;
+      }
+      if (cuts.length > 0 && !confirm(`Replace ${cuts.length} part(s) with ${imported.length} from file?`)) {
+        return;
+      }
+      cuts = imported;
+      renderTable();
+      scheduleUpdate();
+      runPackingNow();
+    } catch (err) {
+      alert(`Import failed: ${err.message}`);
+    } finally {
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ── Maximal Rectangles — Best Short Side Fit (BSSF) ── */
+function splitFree(free, placed, kerf) {
+  const result = [];
+  const pw = placed.w + kerf, ph = placed.h + kerf;
+  if (free.x + free.w > placed.x + pw)
+    result.push({ x: placed.x + pw, y: free.y,    w: free.x + free.w - (placed.x + pw), h: free.h });
+  if (free.y + free.h > placed.y + ph)
+    result.push({ x: free.x,        y: placed.y + ph, w: free.w, h: free.y + free.h - (placed.y + ph) });
+  if (placed.x > free.x)
+    result.push({ x: free.x, y: free.y, w: placed.x - free.x, h: free.h });
+  if (placed.y > free.y)
+    result.push({ x: free.x, y: free.y, w: free.w, h: placed.y - free.y });
+  return result;
+}
+
+function removeContained(rects) {
+  return rects.filter((r, i) => !rects.some((o, j) =>
+    i !== j && o.x <= r.x && o.y <= r.y &&
+    o.x + o.w >= r.x + r.w && o.y + o.h >= r.y + r.h));
+}
+
+function splitFreeRectsAfterPlace(freeRects, p, kerf) {
+  const newFrees = [];
+  for (const fr of freeRects) {
+    if (fr.x < p.x + p.w + kerf && fr.x + fr.w > p.x &&
+        fr.y < p.y + p.h + kerf && fr.y + fr.h > p.y) {
+      newFrees.push(...splitFree(fr, p, kerf));
+    } else {
+      newFrees.push(fr);
+    }
+  }
+  return removeContained(newFrees);
+}
+
+/** BSSF slack for one (free rect, size) pair. */
+function bssfScore(f, pw, ph) {
+  return Math.min(f.w - pw, f.h - ph);
+}
+
+/** BSSF, then bottom-left (y, x) so free space stays in larger contiguous bands. */
+function collectPlacements(freeRects, item, kerf, allowRot, limit) {
+  const list = [];
+  for (let fi = 0; fi < freeRects.length; fi++) {
+    const f = freeRects[fi];
+    const tries = [[item.w, item.h, false]];
+    if (allowRot && item.w !== item.h) tries.push([item.h, item.w, true]);
+    for (const [pw, ph, rot] of tries) {
+      if (pw <= f.w && ph <= f.h)
+        list.push({ fi, f, pw, ph, rot, score: bssfScore(f, pw, ph) });
+    }
+  }
+  list.sort((a, b) =>
+    a.score - b.score ||
+    a.f.y - b.f.y ||
+    a.f.x - b.f.x ||
+    a.fi - b.fi);
+  return list.slice(0, limit);
+}
+
+function pieceFromPlacement(item, pl) {
+  return {
+    x: pl.f.x,
+    y: pl.f.y,
+    w: pl.pw,
+    h: pl.ph,
+    name: item.name,
+    color: item.color,
+    rotated: pl.rot,
+    origW: item.w,
+    origH: item.h,
+  };
+}
+
+function rankLexLess(a, b) {
+  for (let k = 0; k < a.length; k++) {
+    if (a[k] < b[k]) return true;
+    if (a[k] > b[k]) return false;
+  }
+  return false;
+}
+
+/**
+ * Maximal rectangles + BSSF; light 2-part look-ahead (fallback packer).
+ */
+function packSheetMaxRects(sheetW, sheetH, items, kerf, allowRot) {
+  const TOP_CURRENT = 18;
+  const TOP_NEXT = 8;
+  let freeRects = [{ x: 0, y: 0, w: sheetW, h: sheetH }];
+  const placed = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const candsI = collectPlacements(freeRects, item, kerf, allowRot, TOP_CURRENT);
+    if (candsI.length === 0) return null;
+
+    let chosen = candsI[0];
+    const hasNext = i + 1 < items.length;
+
+    if (hasNext && candsI.length > 1) {
+      let bestRank = null;
+      for (const ci of candsI) {
+        const p0 = pieceFromPlacement(item, ci);
+        const free1 = splitFreeRectsAfterPlace(freeRects, p0, kerf);
+        const nextItem = items[i + 1];
+        const candsJ = collectPlacements(free1, nextItem, kerf, allowRot, TOP_NEXT);
+
+        if (candsJ.length === 0) {
+          const rank = [1, 1e15, 1e15, 1e15, ci.score];
+          if (bestRank === null || rankLexLess(rank, bestRank)) {
+            bestRank = rank;
+            chosen = ci;
+          }
+          continue;
+        }
+
+        for (const cj of candsJ) {
+          const p1 = pieceFromPlacement(nextItem, cj);
+          const free2 = splitFreeRectsAfterPlace(free1, p1, kerf);
+          let miss3 = 0;
+          let s3 = 0;
+          if (i + 2 < items.length) {
+            const c3 = collectPlacements(free2, items[i + 2], kerf, allowRot, 1);
+            if (c3.length === 0) {
+              miss3 = 1;
+              s3 = 1e15;
+            } else {
+              s3 = c3[0].score;
+            }
+          }
+          const rank = [0, miss3, s3, cj.score, ci.score];
+          if (bestRank === null || rankLexLess(rank, bestRank)) {
+            bestRank = rank;
+            chosen = ci;
+          }
+        }
+      }
+    }
+
+    const p = pieceFromPlacement(item, chosen);
+    placed.push(p);
+    freeRects = splitFreeRectsAfterPlace(freeRects, p, kerf);
+  }
+  return placed;
+}
+
+/**
+ * Shelf packer preserving input order (name-grouped).
+ * Returns { placed, shelfBottom } — placed may be fewer than items.length.
+ */
+function packSheetShelvesPartial(sheetW, sheetH, items, kerf, allowRot) {
+  const heightTol = 1.5;
+  const heightCounts = {};
+  for (const item of items) {
+    const h1 = Math.round(item.h);
+    heightCounts[h1] = (heightCounts[h1] || 0) + 1;
+    if (allowRot && Math.abs(item.w - item.h) > heightTol) {
+      const h2 = Math.round(item.w);
+      heightCounts[h2] = (heightCounts[h2] || 0) + 1;
+    }
+  }
+
+  const assignments = items.map((item, i) => {
+    const h1 = Math.round(item.h);
+    const h2 = (allowRot && Math.abs(item.w - item.h) > heightTol) ? Math.round(item.w) : -1;
+    if (h2 < 0) {
+      return { i, w: item.w, h: item.h, rotated: false, shelfH: h1 };
+    }
+    const c1 = heightCounts[h1] || 0;
+    const c2 = heightCounts[h2] || 0;
+    if (c1 > c2 || (c1 === c2 && item.h <= item.w)) {
+      return { i, w: item.w, h: item.h, rotated: false, shelfH: h1 };
+    }
+    return { i, w: item.h, h: item.w, rotated: true, shelfH: h2 };
+  });
+
+  const shelfGroups = {};
+  for (const a of assignments) {
+    if (!shelfGroups[a.shelfH]) shelfGroups[a.shelfH] = [];
+    shelfGroups[a.shelfH].push(a);
+  }
+
+  const heightOrder = [];
+  const seenH = new Set();
+  for (const a of assignments) {
+    if (!seenH.has(a.shelfH)) {
+      seenH.add(a.shelfH);
+      heightOrder.push(a.shelfH);
+    }
+  }
+
+  for (const h of heightOrder) {
+    shelfGroups[h].sort((a, b) => {
+      const na = items[a.i].name, nb = items[b.i].name;
+      if (na < nb) return -1;
+      if (na > nb) return 1;
+      return b.w - a.w;
+    });
+  }
+
+  const placed = [];
+  const placedIndices = new Set();
+  let shelfTop = 0;
+
+  for (const h of heightOrder) {
+    const group = shelfGroups[h];
+    const used = new Array(group.length).fill(false);
+    let remaining = group.length;
+
+    while (remaining > 0) {
+      if (shelfTop + h > sheetH) break;
+
+      let curX = 0;
+      let placedInRow = 0;
+
+      for (let gi = 0; gi < group.length; gi++) {
+        if (used[gi]) continue;
+        const a = group[gi];
+        if (curX + a.w > sheetW) continue;
+
+        const item = items[a.i];
+        placed.push({
+          x: curX, y: shelfTop, w: a.w, h: a.h,
+          name: item.name, color: item.color,
+          rotated: a.rotated, origW: item.w, origH: item.h,
+        });
+        curX += a.w + kerf;
+        used[gi] = true;
+        placedIndices.add(a.i);
+        remaining--;
+        placedInRow++;
+      }
+
+      if (placedInRow === 0) break;
+      shelfTop += h + kerf;
+    }
+  }
+
+  const unplacedItems = items.filter((_, i) => !placedIndices.has(i));
+  return { placed, unplacedItems, shelfBottom: shelfTop };
+}
+
+/**
+ * Compute free rectangles on the full sheet after placing a set of pieces.
+ * Uses the same maximal-rectangles split logic.
+ */
+function computeFreeRects(sheetW, sheetH, placedPieces, kerf) {
+  let freeRects = [{ x: 0, y: 0, w: sheetW, h: sheetH }];
+  for (const p of placedPieces) {
+    freeRects = splitFreeRectsAfterPlace(freeRects, p, kerf);
+  }
+  return freeRects;
+}
+
+/**
+ * Place overflow items into existing free rectangles using maxrects BSSF.
+ * Returns placed array or null if not all items fit.
+ */
+function fillFreeSpace(freeRects, items, kerf, allowRot) {
+  let free = [...freeRects];
+  const placed = [];
+
+  for (const item of items) {
+    let bestScore = Infinity, bestFree = -1, bestW = 0, bestH = 0, bestRotated = false;
+    for (let fi = 0; fi < free.length; fi++) {
+      const f = free[fi];
+      const tries = [[item.w, item.h, false]];
+      if (allowRot && item.w !== item.h) tries.push([item.h, item.w, true]);
+      for (const [pw, ph, rot] of tries) {
+        if (pw <= f.w && ph <= f.h) {
+          const score = Math.min(f.w - pw, f.h - ph);
+          if (score < bestScore) {
+            bestScore = score; bestFree = fi;
+            bestW = pw; bestH = ph; bestRotated = rot;
+          }
+        }
+      }
+    }
+    if (bestFree === -1) return null;
+    const f = free[bestFree];
+    const p = {
+      x: f.x, y: f.y, w: bestW, h: bestH,
+      name: item.name, color: item.color,
+      rotated: bestRotated, origW: item.w, origH: item.h,
+    };
+    placed.push(p);
+    free = splitFreeRectsAfterPlace(free, p, kerf);
+  }
+  return placed;
+}
+
+/**
+ * Two-phase packer:
+ *  Phase 1 — shelves (name-grouped, clean rows)
+ *  Phase 2 — maxrects fills ALL remaining free space (right gaps + below)
+ */
+function packSheet(sheetW, sheetH, items, kerf, allowRot) {
+  const { placed, unplacedItems } = packSheetShelvesPartial(sheetW, sheetH, items, kerf, allowRot);
+
+  if (unplacedItems.length === 0) return placed;
+
+  if (placed.length > 0 && unplacedItems.length > 0) {
+    const freeRects = computeFreeRects(sheetW, sheetH, placed, kerf);
+    const overflow = fillFreeSpace(freeRects, unplacedItems, kerf, allowRot);
+    if (overflow && overflow.length === unplacedItems.length) {
+      return [...placed, ...overflow];
+    }
+  }
+
+  return packSheetMaxRects(sheetW, sheetH, items, kerf, allowRot);
+}
+
+/** Same part name in one run (CSV first-seen order); within name, larger pieces first. */
+function orderPartsForCutting(expanded) {
+  const firstSeen = new Map();
+  for (let i = 0; i < expanded.length; i++) {
+    const n = expanded[i].name;
+    if (!firstSeen.has(n)) firstSeen.set(n, i);
+  }
+  const copy = expanded.map((p) => ({ ...p }));
+  copy.sort((a, b) => {
+    const ia = firstSeen.get(a.name);
+    const ib = firstSeen.get(b.name);
+    if (ia !== ib) return ia - ib;
+    const ab = b.w * b.h - a.w * a.h;
+    if (ab !== 0) return ab;
+    if (b.w !== a.w) return b.w - a.w;
+    return b.h - a.h;
+  });
+  return copy;
+}
+
+function packAllSheets(sw, sh, ordered, kerf, allowRot, maxSheets) {
+  const sheets = [];
+  let remaining = [...ordered];
+  while (remaining.length > 0 && sheets.length < maxSheets) {
+    let placed = null;
+    let packedCount = 0;
+    for (let tryN = remaining.length; tryN >= 1; tryN--) {
+      const attempt = packSheet(sw, sh, remaining.slice(0, tryN), kerf, allowRot);
+      if (attempt !== null && attempt.length === tryN) {
+        placed = attempt;
+        packedCount = tryN;
+        break;
+      }
+    }
+    if (!placed || packedCount === 0) break;
+    sheets.push({ placed });
+    remaining = remaining.slice(packedCount);
+  }
+  return { sheets, remaining };
+}
+
+function rectsOverlapWithKerf(a, b, kerf) {
+  return !(
+    a.x + a.w + kerf <= b.x ||
+    b.x + b.w + kerf <= a.x ||
+    a.y + a.h + kerf <= b.y ||
+    b.y + b.h + kerf <= a.y
+  );
+}
+
+function rectWithinSheet(r, sw, sh) {
+  return r.x >= 0 && r.y >= 0 && r.x + r.w <= sw && r.y + r.h <= sh;
+}
+
+function canPlacePieceAt(placed, self, nx, ny, sw, sh, kerf) {
+  const t = { x: nx, y: ny, w: self.w, h: self.h };
+  if (!rectWithinSheet(t, sw, sh)) return false;
+  for (const q of placed) {
+    if (q === self) continue;
+    if (rectsOverlapWithKerf(t, q, kerf)) return false;
+  }
+  return true;
+}
+
+function partSimilarityKey(p) {
+  const rw = Math.round(p.w);
+  const rh = Math.round(p.h);
+  return `${p.name}\0${rw}\0${rh}\0${p.rotated ? 1 : 0}`;
+}
+
+/** Slide self to the smallest x >= targetX that is still valid (then one step further if targetX works). */
+function slidePieceLeftTo(placed, p, targetX, sw, sh, kerf) {
+  const t0 = Math.floor(Math.max(0, targetX));
+  let best = p.x;
+  for (let x = Math.floor(p.x - 1); x >= t0; x--) {
+    if (canPlacePieceAt(placed, p, x, p.y, sw, sh, kerf)) best = x;
+  }
+  if (best < p.x - 1e-6) {
+    p.x = best;
+    return true;
+  }
+  return false;
+}
+
+function slidePieceUpTo(placed, p, targetY, sw, sh, kerf) {
+  const t0 = Math.floor(Math.max(0, targetY));
+  let best = p.y;
+  for (let y = Math.floor(p.y - 1); y >= t0; y--) {
+    if (canPlacePieceAt(placed, p, p.x, y, sw, sh, kerf)) best = y;
+  }
+  if (best < p.y - 1e-6) {
+    p.y = best;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * After packing, slide parts with the same on-sheet size toward one x (column)
+ * or one y (row). Uses integer steps so small stagger (< kerf) still corrects.
+ */
+function alignSimilarPiecesSecondPass(sheet, sw, sh, kerf) {
+  const placed = sheet.placed;
+  if (!placed || placed.length < 2) return;
+  const k = kerf > 0 ? kerf : 0;
+  for (let round = 0; round < 12; round++) {
+    let moved = false;
+    const byKey = new Map();
+    for (const p of placed) {
+      const key = partSimilarityKey(p);
+      if (!byKey.has(key)) byKey.set(key, []);
+      byKey.get(key).push(p);
+    }
+    for (const [, arr] of byKey) {
+      if (arr.length < 2) continue;
+      const wSame = arr.every((p) => Math.abs(p.w - arr[0].w) < 0.5);
+      const hSame = arr.every((p) => Math.abs(p.h - arr[0].h) < 0.5);
+      if (wSame) {
+        const minX = Math.min(...arr.map((p) => p.x));
+        const maxX = Math.max(...arr.map((p) => p.x));
+        if (maxX - minX > 0.01) {
+          for (const p of [...arr].sort((a, b) => b.x - a.x)) {
+            if (slidePieceLeftTo(placed, p, minX, sw, sh, k)) moved = true;
+          }
+        }
+      }
+      if (hSame) {
+        const minY = Math.min(...arr.map((p) => p.y));
+        const maxY = Math.max(...arr.map((p) => p.y));
+        if (maxY - minY > 0.01) {
+          for (const p of [...arr].sort((a, b) => b.y - a.y)) {
+            if (slidePieceUpTo(placed, p, minY, sw, sh, k)) moved = true;
+          }
+        }
+      }
+    }
+    if (!moved) break;
+  }
+}
+
+function fitSheetPreviewSize(containerW, containerH, sw, sh) {
+  let w = containerW;
+  let h = (w * sh) / sw;
+  if (h > containerH) {
+    h = containerH;
+    w = (h * sw) / sh;
+  }
+  return {
+    w: Math.max(1, Math.floor(w)),
+    h: Math.max(1, Math.floor(h)),
+  };
+}
+
+function drawSheetCanvas(ctx, dw, dh, sw, sh, sheet, kerf, unit, colors) {
+  const scale = dw / sw;
+  const sheetH = (sh * dw) / sw;
+
+  ctx.fillStyle = colors.sheet;
+  ctx.fillRect(0, 0, dw, sheetH);
+
+  ctx.strokeStyle = colors.grid;
+  ctx.lineWidth = 0.5;
+  const gridStep = unit === 'mm' ? 100 : 1;
+  for (let x = 0; x <= sw; x += gridStep) {
+    ctx.beginPath();
+    ctx.moveTo(x * scale, 0);
+    ctx.lineTo(x * scale, sheetH);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= sh; y += gridStep) {
+    ctx.beginPath();
+    ctx.moveTo(0, y * scale);
+    ctx.lineTo(dw, y * scale);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = colors.border;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0, 0, dw, sheetH);
+
+  for (const p of sheet.placed) {
+    const x = p.x * scale;
+    const y = p.y * scale;
+    const pw = p.w * scale;
+    const ph = p.h * scale;
+
+    ctx.fillStyle = p.color + 'cc';
+    ctx.fillRect(x, y, pw, ph);
+    ctx.strokeStyle = p.color;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x, y, pw, ph);
+
+    if (p.rotated) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, pw, ph);
+      ctx.clip();
+      ctx.strokeStyle = p.color + '44';
+      ctx.lineWidth = 1;
+      for (let d = -ph; d < pw; d += 14) {
+        ctx.beginPath();
+        ctx.moveTo(x + d, y);
+        ctx.lineTo(x + d + ph, y + ph);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    ctx.save();
+    const fontSize = Math.min(12, Math.max(7, pw / 8));
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${fontSize}px monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = p.name.length > 16 ? p.name.slice(0, 15) + '…' : p.name;
+    const dim = `${p.origW}×${p.origH}`;
+    const cx = x + pw / 2;
+    const cy = y + ph / 2;
+    if (ph > 20) {
+      ctx.fillText(label, cx, cy - fontSize * 0.7);
+      ctx.font = `${Math.max(6, fontSize - 2)}px monospace`;
+      ctx.fillStyle = '#ffffffaa';
+      ctx.fillText(dim + (p.rotated ? ' ↻' : ''), cx, cy + fontSize * 0.7);
+    } else {
+      ctx.fillText(dim, cx, cy);
+    }
+    ctx.restore();
+  }
+
+  if (kerf > 0 && scale * kerf >= 1.5) {
+    ctx.strokeStyle = '#cc440055';
+    ctx.lineWidth = kerf * scale;
+    for (const p of sheet.placed) {
+      ctx.strokeRect(
+        p.x * scale + (kerf * scale) / 2,
+        p.y * scale + (kerf * scale) / 2,
+        p.w * scale - kerf * scale,
+        p.h * scale - kerf * scale,
+      );
+    }
+  }
+}
+
+function mountSheetCanvas(wrap, sw, sh, sheet, kerf, unit) {
+  const frame = document.createElement('div');
+  frame.className = 'sheet-canvas-frame';
+  const box = document.createElement('div');
+  box.className = 'sheet-canvas-box';
+  const canvas = document.createElement('canvas');
+  box.appendChild(canvas);
+  frame.appendChild(box);
+  wrap.appendChild(frame);
+
+  const paint = () => {
+    const frameW = frame.clientWidth;
+    const frameH = frame.clientHeight;
+    if (frameW < 1 || frameH < 1) return;
+    const { w, h } = fitSheetPreviewSize(frameW, frameH, sw, sh);
+    box.style.width = `${w}px`;
+    box.style.height = `${h}px`;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawSheetCanvas(ctx, w, h, sw, sh, sheet, kerf, unit, getSheetDrawColors());
+  };
+
+  const ro = new ResizeObserver(paint);
+  ro.observe(frame);
+  paint();
+  return canvas;
+}
+
+/* ── Main ── */
+function runPacking() {
+  syncCutsFromTable();
+  scheduleSave();
+  const sw       = +document.getElementById('sw').value;
+  const sh       = +document.getElementById('sh').value;
+  const kerf     = +document.getElementById('kerf').value;
+  const allowRot = document.getElementById('allowrot').value === '1';
+  const unit     = document.getElementById('unit').value;
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = '';
+
+  if (cuts.length === 0) {
+    setResultsPlaceholder(true);
+    return;
+  }
+
+  /* Expand qty, assign colors by name */
+  const expanded = [];
+  let colorIdx = 0;
+  const nameColorMap = {};
+  for (const c of cuts) {
+    if (!nameColorMap[c.name])
+      nameColorMap[c.name] = PALETTE[colorIdx++ % PALETTE.length];
+    for (let q = 0; q < c.qty; q++)
+      expanded.push({ w: c.w, h: c.h, name: c.name, color: nameColorMap[c.name] });
+  }
+
+  const ordered = orderPartsForCutting(expanded);
+  const maxSheets = 50;
+  const sheetArea = sw * sh;
+  const { sheets, remaining } = packAllSheets(sw, sh, ordered, kerf, allowRot, maxSheets);
+  for (const s of sheets) alignSimilarPiecesSecondPass(s, sw, sh, kerf);
+
+  /* ── Stats ── */
+  const totalArea = expanded.reduce((s, p) => s + p.w * p.h, 0);
+  const utilPct   = sheets.length
+    ? Math.round(totalArea / (sheetArea * sheets.length) * 100) : 0;
+
+  const statsDiv = document.createElement('div');
+  statsDiv.className = 'stats';
+  statsDiv.innerHTML = `
+    <div class="stat">
+      <div class="stat-label">Sheets needed</div>
+      <div class="stat-val">${sheets.length}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Total parts</div>
+      <div class="stat-val">${expanded.length}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Material utilization</div>
+      <div class="stat-val">${utilPct}%</div>
+    </div>
+    ${remaining.length > 0 ? `
+    <div class="stat danger">
+      <div class="stat-label">Did not fit</div>
+      <div class="stat-val">${remaining.length}</div>
+    </div>` : ''}
+  `;
+  resultsEl.appendChild(statsDiv);
+
+  /* ── Legend ── */
+  const legendDiv = document.createElement('div');
+  legendDiv.className = 'legend';
+  for (const [name, color] of Object.entries(nameColorMap)) {
+    legendDiv.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:${color}"></div>
+        ${name}
+      </div>`;
+  }
+  resultsEl.appendChild(legendDiv);
+
+  if (sheets.length === 0) {
+    setResultsPlaceholder(true);
+    return;
+  }
+
+  setResultsPlaceholder(false);
+
+  sheets.forEach((sheet, si) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'sheet-wrap';
+
+    const sheetUtil = Math.round(
+      sheet.placed.reduce((s, p) => s + p.w * p.h, 0) / sheetArea * 100);
+
+    wrap.innerHTML = `
+      <div class="sheet-header">
+        <div class="sheet-title">
+          Sheet ${si + 1} — ${sheet.placed.length} parts — ${sheetUtil}% utilization
+        </div>
+        <button type="button" class="dl-btn" id="dl-${si}">
+          <i class="ti ti-download" aria-hidden="true"></i> Download PNG
+        </button>
+      </div>
+    `;
+
+    const canvas = mountSheetCanvas(wrap, sw, sh, sheet, kerf, unit);
+    resultsEl.appendChild(wrap);
+
+    wrap.querySelector(`#dl-${si}`).onclick = () => {
+      const a = document.createElement('a');
+      a.download = `sheet_${si + 1}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    };
+  });
+}
+
+/* Init */
+loadState();
+if (!localStorage.getItem(STORAGE_KEY)) initTheme(null);
+syncPreviewAspect();
+bindSettingsPersistence();
+bindThemeToggle();
+document.getElementById('clear-all-parts-btn').addEventListener('click', clearAllParts);
+renderTable();
+runPacking();
+</script>
+</body>
+</html>

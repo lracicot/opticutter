@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: GitHub Actions OIDC role for lracicot/sheetmaxxing (deploy once per AWS account).
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Default: lracicot
+  GitHubRepo:
+    Type: String
+    Default: sheetmaxxing
+  OIDCProviderArn:
+    Type: String
+    Default: ''
+    Description: Leave empty to create the GitHub OIDC provider in this account.
+
+Conditions:
+  CreateOIDCProvider: !Equals [!Ref OIDCProviderArn, '']
+
+Resources:
+  GitHubOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateOIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+        - 1c58a3a8518e8759f0754e48373d18190170fb78
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: opticutter_github_cicd
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - CreateOIDCProvider
+                - !Ref GitHubOIDCProvider
+                - !Ref OIDCProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub 'repo:${GitHubOrg}/${GitHubRepo}:*'
+      Policies:
+        - PolicyName: opticutter-static-site
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:*
+                  - s3:*
+                  - cloudfront:*
+                  - acm:*
+                  - route53:ChangeResourceRecordSets
+                  - route53:GetChange
+                  - route53:GetHostedZone
+                  - route53:ListHostedZones
+                  - route53:ListResourceRecordSets
+                Resource: '*'
+
+Outputs:
+  RoleArn:
+    Value: !GetAtt DeployRole.Arn

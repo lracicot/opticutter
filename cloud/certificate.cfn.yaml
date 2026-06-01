@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  DomainName:
+    Type: String
+  SubDomain:
+    Type: String
+    Default: opticutter
+  AltSubDomain:
+    Type: String
+    Default: sheetmaxxing
+  HostedZoneId:
+    Type: String
+
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub '${SubDomain}.${DomainName}'
+      SubjectAlternativeNames:
+        - !Sub '${AltSubDomain}.${DomainName}'
+      DomainValidationOptions:
+        - DomainName: !Sub '${SubDomain}.${DomainName}'
+          HostedZoneId: !Ref HostedZoneId
+        - DomainName: !Sub '${AltSubDomain}.${DomainName}'
+          HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+
+Outputs:
+  CertificateArn:
+    Description: Issued certificate
+    Value: !Ref Certificate
